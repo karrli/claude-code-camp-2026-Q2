@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+cd "$(dirname "$0")/../log-viewer"
+
+PORT="${PORT:-8934}"
+
+if command -v open >/dev/null 2>&1; then
+  ( sleep 1 && open "http://localhost:${PORT}" ) &
+fi
+
+exec ruby server.rb

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Boukensha Log Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">襲</span>
+      <h1>Boukensha Log Viewer</h1>
+    </div>
+
+    <div class="controls">
+      <select id="session-select" title="Session file">
+        <option value="">waiting for sessions…</option>
+      </select>
+      <label class="check">
+        <input type="checkbox" id="chk-follow" checked />
+        Follow latest
+      </label>
+
+      <button id="btn-pause">Pause</button>
+      <button id="btn-clear">Clear</button>
+      <label class="check">
+        <input type="checkbox" id="chk-autoscroll" checked />
+        Autoscroll
+      </label>
+
+      <span id="live-indicator" class="live-indicator idle">
+        <span class="dot"></span>
+        <span class="live-text">idle</span>
+      </span>
+    </div>
+  </header>
+
+  <section class="stats" id="stats">
+    <div class="stat"><span class="stat-label">session</span><span class="stat-value" id="stat-session">–</span></div>
+    <div class="stat"><span class="stat-label">task(s)</span><span class="stat-value" id="stat-task">–</span></div>
+    <div class="stat"><span class="stat-label">iteration</span><span class="stat-value" id="stat-iteration">–</span></div>
+    <div class="stat"><span class="stat-label">elapsed</span><span class="stat-value" id="stat-elapsed">–</span></div>
+    <div class="stat"><span class="stat-label">tool calls</span><span class="stat-value" id="stat-toolcalls">0</span></div>
+    <div class="stat"><span class="stat-label">tokens in / out</span><span class="stat-value" id="stat-tokens">0 / 0</span></div>
+    <div class="stat"><span class="stat-label">est. cost</span><span class="stat-value" id="stat-cost">$0.000000</span></div>
+  </section>
+
+  <section class="filterbar">
+    <div class="chips" id="phase-chips"></div>
+    <input id="search" type="search" placeholder="Filter (text search across events)…" />
+  </section>
+
+  <main id="timeline" class="timeline">
+    <div class="empty-state" id="empty-state">
+      <p>Waiting for a session…</p>
+      <p>
+        This page polls <code>.boukensha/sessions</code> automatically — as soon as
+        <code>Boukensha::Logger</code> starts writing a session file, it will appear here
+        and update live. Nothing to pick or connect.
+      </p>
+      <p class="hint">
+        Not seeing anything? Make sure <code>server.rb</code> is running from this
+        directory (see README) and that an agent run has started.
+      </p>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
