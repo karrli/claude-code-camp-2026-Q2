@@ -7,5 +7,5 @@ tasks:
 mud:
   host: localhost
   port: 4000
-  username: dummy
+  username: dummyi
   password: helloworld
