@@ -1,0 +1,38 @@
+PATH
+  remote: .
+  specs:
+    boukensha (0.12.0)
+      bubbletea
+      mud_manager (~> 0.1)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    bubbletea (0.1.4)
+      lipgloss (~> 0.1)
+    bubbletea (0.1.4-arm64-darwin)
+      lipgloss (~> 0.1)
+    bubbletea (0.1.4-x86_64-darwin)
+      lipgloss (~> 0.1)
+    bubbletea (0.1.4-x86_64-linux-gnu)
+      lipgloss (~> 0.1)
+    dotenv (3.2.0)
+    lipgloss (0.2.2)
+    lipgloss (0.2.2-arm64-darwin)
+    lipgloss (0.2.2-x86_64-darwin)
+    lipgloss (0.2.2-x86_64-linux-gnu)
+    mud_manager (0.1.0)
+
+PLATFORMS
+  arm64-darwin
+  ruby
+  x86_64-darwin
+  x86_64-linux
+
+DEPENDENCIES
+  boukensha!
+  bubbletea
+  dotenv
+
+BUNDLED WITH
+   2.5.19
