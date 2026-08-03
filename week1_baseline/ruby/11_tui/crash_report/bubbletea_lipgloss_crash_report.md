@@ -1,5 +1,11 @@
 ## `Bubbletea::Program.new` + any `lipgloss` call crashes with `fatal error: bad sweepgen in refill` on macOS
 
+> **Status in this project:** worked around by dropping `lipgloss`/`bubbles`/`charm`
+> entirely and hand-rolling the equivalent styling/viewport/text-input in pure
+> Ruby (`PlainStyle`/`PlainViewport`/`PlainTextInput` in `lib/boukensha/tui.rb`),
+> since `bubbletea`-only is stable. This report is kept as-is below for filing
+> upstream — the underlying bug in `bubbletea-ruby`/`lipgloss-ruby` is unfixed.
+
 ### Environment
 
 - macOS 26.6 (BuildVersion 25G72), Darwin 25.6.0, x86_64

@@ -1,8 +1,10 @@
 # Step 11 — A Terminal UI (macOS)
 
-Boukensha now ships a full terminal UI (TUI) built on the [`charm`](https://github.com/charm-ruby/charm) gem (bubbletea + lipgloss + bubbles). The plain REPL from step 10 is still there and can be selected with `tui: false`.
+Boukensha now ships a full terminal UI (TUI). The plain REPL from step 10 is still there and can be selected with `tui: false`.
 
-This is the **macOS port** of `../11_tui`, which was built and documented against x86_64 Linux (WSL2). The Ruby/TUI code is identical and fully portable — only the native-gem platform pins, the `bubbletea` patch's rebuild tooling, and the setup commands below differ. See `patches/bubbletea/README.md` for the macOS-specific rebuild notes.
+This is the **macOS port** of `../11_tui`, which was built and documented against x86_64 Linux (WSL2) using the [`charm`](https://github.com/charm-ruby/charm) gem (bubbletea + lipgloss + bubbles). On macOS, running `bubbletea` and `lipgloss` together crashes the process — each embeds its own independent Go runtime, and having both active corrupts memory the moment a call crosses from one into the other (`fatal error: bad sweepgen in refill`). Full writeup and minimal repro: `crash_report/bubbletea_lipgloss_crash_report.md`.
+
+**This port uses `bubbletea` only.** `lipgloss` and `bubbles` (which itself depends on `lipgloss` internally) are gone entirely — `lib/boukensha/tui.rb` hand-rolls the equivalent styling/viewport/text-input in pure Ruby (`PlainStyle`, `PlainViewport`, `PlainTextInput`) since `bubbletea`'s renderer just takes a plain ANSI string. The four-zone layout, keyboard shortcuts, and everything else below behave the same as the Linux version.
 
 ## What's new
 
@@ -41,7 +43,7 @@ The agent runs in a background thread so the UI stays responsive during long tur
 ### `Boukensha.repl` — new `tui:` keyword
 
 ```ruby
-Boukensha.repl(tui: true)   # default — launches charm TUI
+Boukensha.repl(tui: true)   # default — launches the bubbletea TUI
 Boukensha.repl(tui: false)  # falls back to plain terminal REPL
 ```
 
@@ -75,8 +77,8 @@ over unchanged — it doesn't exercise the TUI).
 
 ### Prerequisites (macOS-specific)
 
-- **Xcode Command Line Tools** — needed to build the native gems and, if you
-  apply it, the `bubbletea` input-burst patch: `xcode-select --install`.
+- **Xcode Command Line Tools** — needed to build the native `bubbletea` gem
+  and, if you apply it, its input-burst patch: `xcode-select --install`.
 - This step's `Gemfile.lock` is pinned to the `arm64-darwin` and
   `x86_64-darwin` platform gems (covers Apple Silicon and Intel Macs). Run
   `bundle install` from this directory first.
@@ -92,10 +94,10 @@ gem uninstall boukensha
 gem build boukensha.gemspec
 gem install boukensha-0.11.0.gem
 
-# launches the charm TUI (uses the default ~/.boukensha config dir):
+# launches the bubbletea TUI (uses the default ~/.boukensha config dir):
 BOUKENSHA_PATH=~/Sites/Claude-Code-Camp/week1_baseline/ruby/11_tui_MacOS boukensha
 
-# plain REPL (no charm dependency required):
+# plain REPL:
 BOUKENSHA_PATH=~/Sites/Claude-Code-Camp/week1_baseline/ruby/11_tui_MacOS boukensha --no-tui
 ```
 

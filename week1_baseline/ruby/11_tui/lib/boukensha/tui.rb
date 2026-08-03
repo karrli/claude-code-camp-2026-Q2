@@ -1,11 +1,16 @@
-# NOTE: deliberately require only the three charm libraries this TUI uses
-# (bubbletea + lipgloss + bubbles) rather than `require "charm"`. charm also
-# loads `ntcharts`, whose separate Go runtime interferes with bubbletea's
-# stdin input-reader goroutine and silently drops keystrokes (typed text
-# appears then vanishes). Loading just these three avoids that conflict.
+# NOTE: only `bubbletea` is required here — not `lipgloss` or `bubbles`.
+# bubbletea, lipgloss, and bubbles are each independently-compiled cgo
+# extensions that embed their own Go runtime. On macOS, having bubbletea's
+# and lipgloss's runtimes both active in one process corrupts memory (a Go
+# GC assertion fires: "bad sweepgen in refill") the moment a call crosses
+# from one into the other — reliably, even with nothing more than
+# `Bubbletea::Program.new` followed by any `Lipgloss::Style` call. See
+# crash_report/bubbletea_lipgloss_crash_report.md for the full writeup.
+# `bubbles` pulls in `lipgloss` transitively (its Viewport/TextArea use
+# Lipgloss::Style internally), so it's out too. bubbletea's renderer just
+# takes a plain string, so styling/viewport/input-box below are hand-rolled
+# in pure Ruby instead — see PlainStyle/PlainViewport/PlainTextInput.
 require "bubbletea"
-require "lipgloss"
-require "bubbles"
 
 module Boukensha
   TickMsg = Class.new(Bubbletea::Message)
@@ -17,8 +22,143 @@ module Boukensha
     white:        "#ffffff"
   }.freeze
 
+  # Minimal stand-in for Lipgloss::Style: wraps text in 24-bit ANSI SGR
+  # codes. See the NOTE above lib/boukensha/tui.rb's requires for why.
+  class PlainStyle
+    RESET = "\e[0m"
+
+    def initialize(fg: nil, bg: nil, bold: false)
+      codes = []
+      codes << "1" if bold
+      codes << ansi_code(38, fg) if fg
+      codes << ansi_code(48, bg) if bg
+      @prefix = codes.empty? ? "" : "\e[#{codes.join(';')}m"
+    end
+
+    def render(text)
+      @prefix.empty? ? text : "#{@prefix}#{text}#{RESET}"
+    end
+
+    private
+
+    def ansi_code(base, hex)
+      r, g, b = hex[1..2].to_i(16), hex[3..4].to_i(16), hex[5..6].to_i(16)
+      "#{base};2;#{r};#{g};#{b}"
+    end
+  end
+
+  # Minimal stand-in for Bubbles::Viewport: a scrollable window over a list
+  # of lines. See the NOTE above lib/boukensha/tui.rb's requires for why.
+  class PlainViewport
+    attr_accessor :width, :height
+
+    def initialize
+      @width  = 80
+      @height = 24
+      @lines  = []
+      @offset = 0
+    end
+
+    def content=(text)
+      @lines = text.split("\n", -1)
+      goto_bottom
+    end
+
+    def goto_bottom
+      @offset = max_offset
+    end
+
+    def scroll_up(n)
+      @offset = (@offset - n).clamp(0, max_offset)
+    end
+
+    def scroll_down(n)
+      @offset = (@offset + n).clamp(0, max_offset)
+    end
+
+    def view
+      visible = @lines[@offset, @height] || []
+      visible += [""] * (@height - visible.length) if visible.length < @height
+      visible.join("\n")
+    end
+
+    private
+
+    def max_offset
+      [@lines.length - @height, 0].max
+    end
+  end
+
+  # Minimal stand-in for Bubbles::TextArea, single-line only (this Tui only
+  # ever uses height: 1). See the NOTE above lib/boukensha/tui.rb's requires
+  # for why.
+  class PlainTextInput
+    attr_accessor :placeholder
+    attr_writer :height # accepted for interface compatibility; unused
+
+    def initialize
+      @buffer  = String.new
+      @cursor  = 0
+      @focused = false
+    end
+
+    def focus
+      @focused = true
+    end
+
+    def value
+      @buffer
+    end
+
+    def reset
+      @buffer = String.new
+      @cursor = 0
+    end
+
+    def update(msg)
+      return [self, nil] unless @focused && msg.is_a?(Bubbletea::KeyMessage)
+
+      case msg.name
+      when "backspace"
+        if @cursor.positive?
+          @buffer.slice!(@cursor - 1)
+          @cursor -= 1
+        end
+      when "delete"
+        @buffer.slice!(@cursor) if @cursor < @buffer.length
+      when "left"
+        @cursor = [@cursor - 1, 0].max
+      when "right"
+        @cursor = [@cursor + 1, @buffer.length].min
+      when "home"
+        @cursor = 0
+      when "end"
+        @cursor = @buffer.length
+      else
+        char = msg.char
+        if char && !msg.ctrl? && !msg.alt
+          @buffer.insert(@cursor, char)
+          @cursor += char.length
+        end
+      end
+
+      [self, nil]
+    end
+
+    def view
+      return PlainStyle.new(fg: "#808080").render(@placeholder) if @buffer.empty? && !@placeholder.to_s.empty?
+
+      before = @buffer[0...@cursor]
+      at_cursor = @buffer[@cursor] || " "
+      after = @buffer[(@cursor + 1)..] || ""
+
+      "#{before}\e[7m#{at_cursor}\e[0m#{after}"
+    end
+  end
+
   # Tui wraps a Repl instance and replaces its raw puts/gets I/O with a
-  # structured four-zone display powered by charm (bubbletea + lipgloss + bubbles).
+  # structured four-zone display powered by bubbletea, hand-rolling styling
+  # in place of lipgloss/bubbles (see NOTE above the requires).
   #
   # The Repl continues to own session logic (turn counting, /commands, Agent
   # dispatch).  Tui registers output/event callbacks on the Repl and drives the
@@ -64,8 +204,8 @@ module Boukensha
 
       @width    = 80
       @height   = 24
-      @viewport = Bubbles::Viewport.new
-      @textarea = Bubbles::TextArea.new
+      @viewport = PlainViewport.new
+      @textarea = PlainTextInput.new
       @textarea.placeholder = "Type a message…"
       @textarea.height = 1
     end
@@ -180,13 +320,11 @@ module Boukensha
 
     def lip(fg = nil, bg: nil, bold: false)
       @lip_cache ||= {}
-      @lip_cache[[fg, bg, bold]] ||= begin
-        s = Lipgloss::Style.new
-        s = s.foreground(ANSI_COLORS[fg]) if fg && ANSI_COLORS[fg]
-        s = s.background(ANSI_COLORS[bg]) if bg && ANSI_COLORS[bg]
-        s = s.bold(true) if bold
-        s
-      end
+      @lip_cache[[fg, bg, bold]] ||= PlainStyle.new(
+        fg:   fg && ANSI_COLORS[fg],
+        bg:   bg && ANSI_COLORS[bg],
+        bold: bold
+      )
     end
 
     # ── keyboard ──────────────────────────────────────────────────────────────

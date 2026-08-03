@@ -22,8 +22,10 @@ Gem::Specification.new do |spec|
   # MUD session management and CircleMUD command primitives.
   spec.add_dependency "mud_manager", "~> 0.1"
 
-  # TUI powered by charm (bubbletea + lipgloss + bubbles bindings).
-  spec.add_dependency "charm"
+  # TUI powered by bubbletea only — not lipgloss/bubbles/charm, which embed a
+  # second Go runtime that corrupts memory alongside bubbletea's on macOS.
+  # See crash_report/bubbletea_lipgloss_crash_report.md.
+  spec.add_dependency "bubbletea"
 
   # net/http and json are stdlib. Users supply their own ANTHROPIC_API_KEY.
 end

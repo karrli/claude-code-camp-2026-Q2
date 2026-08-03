@@ -1,0 +1,44 @@
+PATH
+  remote: .
+  specs:
+    boukensha (0.11.0)
+      bubbletea
+      mud_manager (~> 0.1)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    bubbletea (0.1.4)
+      lipgloss (~> 0.1)
+    bubbletea (0.1.4-arm64-darwin)
+      lipgloss (~> 0.1)
+    bubbletea (0.1.4-x86_64-darwin)
+      lipgloss (~> 0.1)
+    dotenv (3.2.0)
+    lipgloss (0.2.2)
+    lipgloss (0.2.2-arm64-darwin)
+    lipgloss (0.2.2-x86_64-darwin)
+    mud_manager (0.1.0)
+
+PLATFORMS
+  arm64-darwin
+  x86_64-darwin
+
+DEPENDENCIES
+  boukensha!
+  bubbletea
+  dotenv
+
+CHECKSUMS
+  boukensha (0.11.0)
+  bubbletea (0.1.4) sha256=33c3ea5eb7ab03160b942a9a8062ba04d0af2245a0b6b7457853ac4bd3218f69
+  bubbletea (0.1.4-arm64-darwin) sha256=112af8ba51b38c4281b648ce43375e9bbe7b666dbb30c8b8d1cd13b4e163e6cb
+  bubbletea (0.1.4-x86_64-darwin) sha256=8b73c14e4a9a8cb14735edf18c71bf568dee2b4340b0f8f572480665cff3d817
+  dotenv (3.2.0) sha256=e375b83121ea7ca4ce20f214740076129ab8514cd81378161f11c03853fe619d
+  lipgloss (0.2.2) sha256=d803bef2ce53aa7b113d032a4e1f8d3f6fb1841532b379c0b2bfff23a3af85e9
+  lipgloss (0.2.2-arm64-darwin) sha256=fed911706463ed21d249eace2224cd39323e94f4ab2a55ff6763b358b780d18f
+  lipgloss (0.2.2-x86_64-darwin) sha256=6f5bab39a31f38995c5fb964ca0a1f84af0102814b4406f8ca96f30da54e112e
+  mud_manager (0.1.0)
+
+BUNDLED WITH
+  4.0.16
