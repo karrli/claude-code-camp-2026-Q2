@@ -1,0 +1,52 @@
+PATH
+  remote: .
+  specs:
+    boukensha (0.11.0)
+      charm
+      mud_manager (~> 0.1)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    bubbles (0.1.1)
+      bubbletea
+      harmonica
+      lipgloss
+    bubbletea (0.1.4-arm64-darwin)
+      lipgloss (~> 0.1)
+    bubbletea (0.1.4-x86_64-darwin)
+      lipgloss (~> 0.1)
+    bubblezone (0.1.2-arm64-darwin)
+    bubblezone (0.1.2-x86_64-darwin)
+    charm (0.1.0)
+      bubbles
+      bubbletea
+      bubblezone
+      glamour
+      gum
+      harmonica
+      lipgloss
+      ntcharts
+    dotenv (3.2.0)
+    glamour (0.2.2-arm64-darwin)
+    glamour (0.2.2-x86_64-darwin)
+    gum (0.3.2-arm64-darwin)
+    gum (0.3.2-x86_64-darwin)
+    harmonica (0.1.1)
+    lipgloss (0.2.2-arm64-darwin)
+    lipgloss (0.2.2-x86_64-darwin)
+    mud_manager (0.1.0)
+    ntcharts (0.1.2-arm64-darwin)
+    ntcharts (0.1.2-x86_64-darwin)
+
+PLATFORMS
+  arm64-darwin
+  x86_64-darwin
+
+DEPENDENCIES
+  boukensha!
+  charm
+  dotenv
+
+BUNDLED WITH
+   2.5.19
